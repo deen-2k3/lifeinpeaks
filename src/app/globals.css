@@ -1,0 +1,182 @@
+@import "tailwindcss";
+
+@theme {
+  /* Brand palette (fixed) */
+  --color-deepforest: #12372a;
+  --color-mountaingreen: #315c45;
+  --color-olive: #667544;
+  --color-warmstone: #8b8173;
+  --color-parchment: #f3ebdd;
+  --color-snow: #faf9f5;
+  --color-warmbrown: #6b5140;
+  --color-charcoal: #17221d; /* "Ink" – main text */
+
+  /* Semantic tokens — parchment surface by default, flipped inside .surface-dark */
+  --color-ink: #f3ebdd;       /* surface background (parchment) */
+  --color-coal: #faf9f5;      /* alternate sections, cards, gallery background (snow) */
+  --color-ash: #e7dcc9;       /* image placeholders */
+  --color-moss: #315c45;      /* success tint */
+  --color-forest: #12372a;    /* deep forest */
+  --color-pine: #667544;      /* olive: tags, success text */
+  --color-stone: #7a7063;     /* muted text (warm stone, deepened slightly for legibility) */
+  --color-fog: #4f4a42;       /* secondary text */
+  --color-mist: #17221d;      /* main text (ink) */
+  --color-heading: #12372a;   /* headings */
+  --color-ember: #6b5140;     /* warm brown: small accents, favourites, notices */
+  --color-sand: #315c45;      /* hover / link accent */
+  --color-line: #17221d;      /* borders (used with opacity) */
+  --color-cta: #315c45;       /* buttons */
+  --color-cta-hover: #12372a;
+  --color-cta-fg: #faf9f5;
+
+  --font-display: var(--font-cormorant), "Cormorant Garamond", Georgia, serif;
+  --font-script: var(--font-mrdafoe), "Brush Script MT", cursive;
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+
+  --ease-cinematic: cubic-bezier(0.22, 1, 0.36, 1);
+
+  --animate-scroll-hint: scroll-hint 2.2s var(--ease-cinematic) infinite;
+  @keyframes scroll-hint {
+    0% { transform: translateY(-100%); opacity: 0; }
+    30% { opacity: 1; }
+    100% { transform: translateY(200%); opacity: 0; }
+  }
+}
+
+@keyframes rise {
+  from { opacity: 0; transform: translateY(22px); }
+  to { opacity: 1; transform: none; }
+}
+.rise { animation: rise 1.3s var(--ease-cinematic) both; }
+
+:root {
+  color-scheme: light;
+  --header-h: 84px;
+}
+@media (min-width: 640px) { :root { --header-h: 96px; } }
+@media (min-width: 1024px) { :root { --header-h: 108px; } }
+
+/* Deep Forest surfaces: header, footer, heroes, page bands, lightbox, map, admin. */
+.surface-dark {
+  --color-ink: #12372a;
+  --color-coal: #0e2d22;
+  --color-ash: #1b4535;
+  --color-pine: #a9b784;
+  --color-stone: #c4b9a6;
+  --color-fog: #e2d9c8;
+  --color-mist: #faf9f5;
+  --color-heading: #faf9f5;
+  --color-ember: #d9b48f;
+  --color-sand: #f3ebdd;
+  --color-line: #faf9f5;
+  --color-cta: #f3ebdd;
+  --color-cta-hover: #faf9f5;
+  --color-cta-fg: #12372a;
+  color: var(--color-mist);
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}
+
+body {
+  overflow-x: clip;
+  background: var(--color-ink);
+  color: var(--color-mist);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+::selection { background: var(--color-forest); color: var(--color-mist); }
+
+/* Subtle film grain over the whole site */
+.grain::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 60;
+  opacity: 0.035;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+}
+
+@utility eyebrow {
+  font-size: 0.7rem;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: var(--color-stone);
+}
+
+@utility container-page {
+  width: 100%;
+  max-width: 88rem;
+  margin-inline: auto;
+  padding-inline: 1rem;
+  @media (min-width: 640px) { padding-inline: 2rem; }
+  @media (min-width: 1024px) { padding-inline: 3rem; }
+}
+
+/* Justified gallery: rows keep every photo's true aspect ratio (no cropping). */
+.justified {
+  --row: 200px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+@media (min-width: 640px) { .justified { --row: 240px; gap: 8px; } }
+@media (min-width: 1024px) { .justified { --row: 300px; gap: 10px; } }
+@media (min-width: 1600px) { .justified { --row: 360px; } }
+.justified > .j-item {
+  flex-grow: calc(var(--ar) * 100);
+  flex-basis: calc(var(--row) * var(--ar));
+  position: relative;
+}
+.justified > .j-item > .j-ratio { display: block; padding-bottom: calc(100% / var(--ar)); }
+.justified::after { content: ""; flex-grow: 999999; }
+/* On phones, very wide panoramas get their own row */
+@media (max-width: 639px) { .justified > .j-item[data-pano="true"] { flex-basis: 100%; } }
+
+/* Long-form writing */
+.prose-journal { font-size: 1.075rem; line-height: 1.85; color: color-mix(in oklab, var(--color-mist) 86%, transparent); }
+.prose-journal > * + * { margin-top: 1.4em; }
+.prose-journal h2 { font-family: var(--font-display); font-size: 2.1rem; line-height: 1.15; color: var(--color-heading); margin-top: 2.4em; font-weight: 500; }
+.prose-journal h3 { font-family: var(--font-display); font-size: 1.6rem; color: var(--color-heading); margin-top: 2em; font-weight: 500; }
+.prose-journal a { color: var(--color-sand); text-decoration: underline; text-underline-offset: 4px; text-decoration-thickness: 1px; }
+.prose-journal blockquote { font-family: var(--font-display); font-style: italic; font-size: 1.6rem; line-height: 1.4; color: var(--color-mist); border-left: 1px solid var(--color-ember); padding-left: 1.25rem; }
+.prose-journal ul { list-style: none; padding-left: 0; }
+.prose-journal ul li { padding-left: 1.4rem; position: relative; }
+.prose-journal ul li::before { content: ""; position: absolute; left: 0; top: 0.85em; width: 0.6rem; height: 1px; background: var(--color-ember); }
+.prose-journal ol { list-style: decimal; padding-left: 1.4rem; }
+.prose-journal strong { color: var(--color-mist); font-weight: 600; }
+.prose-journal img { border-radius: 2px; }
+.prose-journal > p:first-of-type::first-letter {
+  font-family: var(--font-display);
+  float: left;
+  font-size: 4.2rem;
+  line-height: 0.9;
+  padding: 0.35rem 0.6rem 0 0;
+  color: var(--color-sand);
+}
+
+/* Leaflet theming */
+.leaflet-container { background: #0e100e !important; font-family: var(--font-sans) !important; }
+.leaflet-popup-content-wrapper, .leaflet-popup-tip { background: rgba(19, 21, 18, 0.96) !important; color: var(--color-mist) !important; border: 1px solid rgba(255,255,255,.08); border-radius: 4px !important; box-shadow: 0 20px 60px rgba(0,0,0,.6) !important; }
+.leaflet-popup-content { margin: 0 !important; width: 260px !important; }
+.leaflet-container a.leaflet-popup-close-button { color: var(--color-mist) !important; top: 6px !important; right: 6px !important; z-index: 2; text-shadow: 0 1px 4px #000; }
+.leaflet-control-attribution { background: rgba(0,0,0,.5) !important; color: #777 !important; font-size: 10px !important; }
+.leaflet-control-attribution a { color: #999 !important; }
+.leaflet-bar a { background: rgba(19,21,18,.9) !important; color: var(--color-mist) !important; border-color: rgba(255,255,255,.08) !important; }
+.map-pin { position: relative; width: 18px; height: 18px; }
+.map-pin span { position: absolute; inset: 5px; border-radius: 9999px; background: var(--color-sand); box-shadow: 0 0 0 2px rgba(11,12,10,.8), 0 0 18px 4px rgba(220,199,166,.55); }
+.map-pin::before { content: ""; position: absolute; inset: 0; border-radius: 9999px; border: 1px solid var(--color-sand); animation: pin-pulse 2.6s ease-out infinite; }
+.map-pin.is-active span { background: var(--color-ember); }
+@keyframes pin-pulse { 0% { transform: scale(.6); opacity: .9; } 100% { transform: scale(2.6); opacity: 0; } }
+
+.no-scrollbar { scrollbar-width: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }

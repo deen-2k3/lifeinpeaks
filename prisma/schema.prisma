@@ -1,0 +1,198 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  name         String?
+  passwordHash String
+  createdAt    DateTime @default(now())
+  lastLoginAt  DateTime?
+}
+
+/// A stored, optimised image asset. Referenced by photos, trip/story covers, memories and settings.
+model Image {
+  id           String   @id @default(cuid())
+  /// Storage key (folder for local provider, public_id for Cloudinary)
+  key          String   @unique
+  provider     String   @default("local")
+  width        Int
+  height       Int
+  /// Widths generated for responsive srcset (local provider)
+  variants     Int[]
+  blurDataUrl  String?
+  color        String?
+  originalName String?
+  bytes        Int?
+  createdAt    DateTime @default(now())
+
+  photo        Photo?
+  memories     Memory[]
+  tripCovers   Trip[]   @relation("TripCover")
+  storyCovers  Story[]  @relation("StoryCover")
+}
+
+enum CategoryGroup {
+  PORTFOLIO
+  MOUNTAIN
+}
+
+model Category {
+  id        String        @id @default(cuid())
+  name      String
+  slug      String
+  group     CategoryGroup
+  sortOrder Int           @default(0)
+  photos    Photo[]
+
+  @@unique([group, slug])
+}
+
+model Trip {
+  id             String    @id @default(cuid())
+  slug           String    @unique
+  title          String
+  region         String
+  country        String    @default("India")
+  tagline        String?
+  excerpt        String?
+  story          String?
+  startDate      DateTime
+  endDate        DateTime?
+  places         String[]
+  latitude       Float?
+  longitude      Float?
+  featured       Boolean   @default(false)
+  published      Boolean   @default(true)
+  sortOrder      Int       @default(0)
+  seoTitle       String?
+  seoDescription String?
+  coverImageId   String?
+  coverImage     Image?    @relation("TripCover", fields: [coverImageId], references: [id], onDelete: SetNull)
+  photos         Photo[]
+  stories        Story[]
+  memories       Memory[]
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@index([startDate])
+}
+
+model Photo {
+  id           String     @id @default(cuid())
+  imageId      String     @unique
+  image        Image      @relation(fields: [imageId], references: [id], onDelete: Cascade)
+  title        String?
+  description  String?
+  alt          String?
+  location     String?
+  takenAt      DateTime?
+  camera       String?
+  lens         String?
+  focalLength  String?
+  aperture     String?
+  iso          String?
+  shutterSpeed String?
+  featured     Boolean    @default(false)
+  published    Boolean    @default(true)
+  tripId       String?
+  trip         Trip?      @relation(fields: [tripId], references: [id], onDelete: SetNull)
+  categories   Category[]
+  stories      Story[]
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  @@index([tripId])
+  @@index([createdAt])
+  @@index([takenAt])
+}
+
+model Story {
+  id             String    @id @default(cuid())
+  slug           String    @unique
+  title          String
+  excerpt        String?
+  content        String
+  location       String?
+  tags           String[]
+  publishedAt    DateTime  @default(now())
+  published      Boolean   @default(true)
+  seoTitle       String?
+  seoDescription String?
+  coverImageId   String?
+  coverImage     Image?    @relation("StoryCover", fields: [coverImageId], references: [id], onDelete: SetNull)
+  tripId         String?
+  trip           Trip?     @relation(fields: [tripId], references: [id], onDelete: SetNull)
+  photos         Photo[]
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@index([publishedAt])
+}
+
+model Memory {
+  id        String    @id @default(cuid())
+  caption   String
+  title     String?
+  location  String?
+  date      DateTime?
+  published Boolean   @default(true)
+  imageId   String
+  image     Image     @relation(fields: [imageId], references: [id], onDelete: Cascade)
+  tripId    String?
+  trip      Trip?     @relation(fields: [tripId], references: [id], onDelete: SetNull)
+  createdAt DateTime  @default(now())
+
+  @@index([date])
+}
+
+/// Singleton row (id = 1) holding editable site-wide content.
+model Settings {
+  id                Int     @id @default(1)
+  siteName          String  @default("Lifeinpeaks")
+  tagline           String  @default("Collecting moments, chasing mountains.")
+  intro             String  @default("")
+  heroImageId       String?
+  heroEyebrow       String  @default("Collecting moments,")
+  heroTitle         String  @default("Chasing Mountains.")
+  heroText          String  @default("")
+  heroAside         String  @default("Good Views, Brighter Days")
+  quote             String  @default("Not all classrooms have four walls.")
+  quoteImageId      String?
+  aboutHeading      String  @default("The person behind the lens.")
+  aboutIntro        String  @default("")
+  aboutBio          String  @default("")
+  ownerName         String  @default("")
+  profileImageId    String?
+  /// [{ "label": "Trips", "value": "20+" }, ...]
+  stats             Json    @default("[]")
+  instagramUsername String  @default("")
+  facebookUrl       String  @default("")
+  youtubeUrl        String  @default("")
+  twitterUrl        String  @default("")
+  pinterestUrl      String  @default("")
+  contactEmail      String  @default("")
+  seoDescription    String  @default("")
+  updatedAt         DateTime @updatedAt
+}
+
+model ContactMessage {
+  id        String   @id @default(cuid())
+  name      String
+  email     String
+  message   String
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+model Subscriber {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  createdAt DateTime @default(now())
+}

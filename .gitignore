@@ -1,0 +1,10 @@
+node_modules
+.next
+out
+.env
+.env.local
+storage/
+.seed-cache/
+*.tsbuildinfo
+next-env.d.ts
+.pgdata/
