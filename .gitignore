@@ -3,8 +3,8 @@ node_modules
 out
 .env
 .env.local
-storage/
-.seed-cache/
+/storage/
+/.seed-cache/
 *.tsbuildinfo
 next-env.d.ts
-.pgdata/
+/.pgdata/
